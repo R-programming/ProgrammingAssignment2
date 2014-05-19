@@ -4,34 +4,31 @@
 #makeCacheMatrix: This function creates a special "matrix" object that can cache
 #its inverse.
 makeCacheMatrix<-function(Matrix=diag(3)){
-    
+    # if an object is called without a method
     CashInverse<-NULL         # Set the original value of "CashInverse" as NULL
     
-    # "setMatrix" function initializes everything: getting a new matrix and 
-    # clearing the cache by setting "CacheInverse" value to NULL
-    setMatrix<-function(y){
-        Matrix<-y             #New matrix y assigned to "Matrix"
-        CacheInverse<<-NULL   #Clear CacheInverse in global environment to NULL
+    # "setCacheMatrix" function initializes everything: gets a new matrix and  
+    # stores the matrix in the cache, and clears the inverse in the cache 
+    # by setting "CacheInverse" value to NULL
+    setCacheMatrix<-function(y){
+        CacheMatrix<<-y      #Assign new matrix y to "CacheMatrix" in cache and
+                             #in global environment
+        CacheInverse<<-NULL  #Clear CacheInverse in global environment to NULL
     }
     
-    #"setCacheMatrix" function stores a matrix in the cache
-    setCacheMatrix<-function(z) CacheMatrix<<-z   #Store matrix z to CacheMatrix
-                                                  #in globalenvironment
+    #"getCacheMatrix" function returns the matrix "CacheMatrix" from cache
+    getCacheMatrix<-function() CacheMatrix
     
-    #"getMatrix" function returns the input matrix "Matrix"
-    getMatrix<-function() Matrix
-    
-    #"setCacheInverse" function stores the inverse of matrix into cache by 
-    #assigning inverse to "CacheInverse" 
+    #"setCacheInverse" function assigns the inverse of matrix to "CacheInverse"
+    #in cache and in global environment
     setCacheInverse<-function(inverse) CacheInverse<<-inverse
     
     #"getCacheInverse" function retrieves the inverse of matrix from the cache
     getCacheInverse<-function() CacheInverse
     
     #Create a list of functions defined in "makeCacheMatrix"
-    list(setMatrix=setMatrix,
-         setCacheMatrix=setCacheMatrix,
-         getMatrix=getMatrix,
+    list(setCacheMatrix=setCacheMatrix,
+         getCacheMatrix=getCacheMatrix,
          setCacheInverse=setCacheInverse,
          getCacheInverse=getCacheInverse
         )
@@ -47,11 +44,11 @@ cacheSolve <- function(x, ...) {
 #matrix has not changed), then the cachesolve should retrieve the inverse from 
 #the cache.
 cacheSolve<-function(input,...){
-    #Get the inverse from cache 
+    #Get the inverse from cache and assign it to CacheInverse
     CacheInverse<-input$getCacheInverse()
     
-    # Get a new matrix and assign it to inputMatrix
-    inputMatrix<-input$getMatrix()
+    # Get the matrix from cache and assign it to inputMatrix
+    inputMatrix<-input$getCacheMatrix()
     
     # if there is value in the cache (!is.null(cacheInverse)=TRUE) AND the
     # "inputMatrix" and "CacheMatrix" are identical, then the function retrieves
@@ -68,8 +65,8 @@ cacheSolve<-function(input,...){
     if(is.null(CacheInverse) | !identical(inputMatrix,CacheMatrix)){
         message("Computing the inverse of matrix")
         NewInverse<-solve(inputMatrix)
-        input$setCacheInverse(NewInverse)
         input$setCacheMatrix(inputMatrix)
+        input$setCacheInverse(NewInverse)
         return(NewInverse)
     }
 }
